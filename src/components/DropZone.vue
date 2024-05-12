@@ -1,30 +1,41 @@
-<script setup lang="ts">
+<script setup>
 import { ref } from 'vue'
 import { useDropZone, useEventListener } from '@vueuse/core'
 
 const filesData = ref([])
 const imageFilesData = ref([])
 
+const fileAlert = ref('')
+
 function onDrop(files) {
   filesData.value = []
   if (files) {
-    filesData.value = files.map((file) => ({
-      name: file.name,
-      size: file.size,
-      type: file.type,
-      lastModified: file.lastModified
-    }))
+    filesData.value = files.map((file) => {
+      if (file.size > 1.5 * 1024 * 1024) {
+        fileAlert.value = `${file.name} - этот файл больше 1.5МБ! Загрузка прервана. Проверьте размер файла!`
+        return
+      }
+
+      return {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        lastModified: file.lastModified
+      }
+    })
   }
 }
 
 function onImageDrop(files) {
   imageFilesData.value = []
+  window.URL = window.URL || window.webkitURL
   if (files) {
     imageFilesData.value = files.map((file) => ({
       name: file.name,
       size: file.size,
       type: file.type,
-      lastModified: file.lastModified
+      lastModified: file.lastModified,
+      src: window.URL.createObjectURL(file)
     }))
   }
 }
@@ -40,9 +51,11 @@ useEventListener(pngRef, 'dragstart', (event) => {
 })
 
 const { isOverDropZone: isOverImageDropZone } = useDropZone(imageDropZoneRef, {
-  dataTypes: ['image/png'],
+  dataTypes: ['image/png', 'image/jpg', 'image/jpeg', 'image/svg'],
   onDrop: onImageDrop
 })
+
+console.log(isOverImageDropZone.value)
 </script>
 
 <template>
@@ -77,10 +90,10 @@ const { isOverDropZone: isOverImageDropZone } = useDropZone(imageDropZoneRef, {
               :key="index"
               class="w-200px bg-black-200/10 ma-2 pa-6"
             >
-              <p>Name: {{ file.name }}</p>
-              <p>Size: {{ file.size }}</p>
-              <p>Type: {{ file.type }}</p>
-              <p>Last modified: {{ file.lastModified }}</p>
+              <p>Name: {{ file?.name }}</p>
+              <p>Size: {{ file?.size }}</p>
+              <p>Type: {{ file?.type }}</p>
+              <p>Last modified: {{ file?.lastModified }}</p>
             </div>
           </div>
         </div>
@@ -90,8 +103,8 @@ const { isOverDropZone: isOverImageDropZone } = useDropZone(imageDropZoneRef, {
         >
           <div font-bold mb2>Image DropZone</div>
           <div>
-            <label class="d-block"> isOverDropZone:</label>
-            <input :value="isOverImageDropZone" />
+            <span class="d-block"> isOverDropZone:</span>
+            <div>{{ isOverImageDropZone }}</div>
           </div>
           <div class="flex flex-wrap justify-center items-center">
             <div
@@ -103,6 +116,7 @@ const { isOverDropZone: isOverImageDropZone } = useDropZone(imageDropZoneRef, {
               <p>Size: {{ file.size }}</p>
               <p>Type: {{ file.type }}</p>
               <p>Last modified: {{ file.lastModified }}</p>
+              <img :src="file.src" :alt="file.name" />
             </div>
           </div>
         </div>
