@@ -5,6 +5,13 @@ import { shallowRef } from 'vue'
 import { useAnimate } from '@vueuse/core'
 import DropZone from './DropZone.vue'
 
+defineProps({
+  activeIndex: Number,
+  formsLength: Number
+})
+
+defineEmits(['Animation', 'onClickInc', 'onClickDec'])
+
 const user = useUser()
 
 const el = shallowRef()
@@ -94,13 +101,6 @@ onMounted(async () => {
         <img width="40" src="/img/home.svg" alt="" />
       </div>
     </button>
-    <div>
-      <button v-if="anim2.playState === 'running'" @click="anim2.pause">pause</button>
-      <button v-else @click="anim2.play">play</button>
-      <button @click="anim2.reverse">reverse</button>
-      <button @click="anim2.finish">finish</button>
-      <button @click="anim2.cancel">cancel</button>
-    </div>
   </div>
 </template>
 

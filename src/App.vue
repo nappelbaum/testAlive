@@ -8,8 +8,11 @@ const activeIndex = ref(null)
 const activeComponent = computed(() => forms.value[activeIndex.value])
 
 const onClickInc = () => {
-  if (activeIndex.value < forms.value.length - 1 && activeIndex.value > -1) activeIndex.value++
+  if (activeIndex.value < forms.value.length - 1 && activeIndex.value > -1) {
+    activeIndex.value++
+  }
 }
+
 const onClickDec = () => {
   if (activeIndex.value > 0 && activeIndex.value < forms.value.length - 1) activeIndex.value--
 }
@@ -38,20 +41,23 @@ onBeforeMount(async () => {
 
   <main class="main py-5">
     <div class="container-xxl">
-      <KeepAlive>
-        <component :is="activeComponent" />
-      </KeepAlive>
-
-      <div class="d-flex gap-4 mx-auto my-3 justify-content-center">
-        <div v-if="activeIndex && activeIndex < forms.length - 1">
-          <button @click="onClickDec" type="submit" class="btn btn-primary">
-            {{ '<' }}- НАЗАД
-          </button>
-        </div>
-        <div v-if="activeIndex < forms.length - 1">
-          <button @click="onClickInc" type="submit" class="btn btn-primary">ДАЛЕЕ -></button>
-        </div>
+      <div class="d-flex gap-3">
+        <span
+          v-for="(form, i) in forms"
+          :key="form.__name"
+          :class="{ 'text-danger': i === activeIndex }"
+          >{{ form.emits[0] }}</span
+        >
       </div>
+      <KeepAlive>
+        <component
+          :is="activeComponent"
+          @onClickInc="onClickInc"
+          @onClickDec="onClickDec"
+          :activeIndex="activeIndex"
+          :formsLength="forms.length"
+        />
+      </KeepAlive>
     </div>
   </main>
   <my-footer />

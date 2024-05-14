@@ -1,8 +1,10 @@
 <script setup>
-import { onDeactivated, reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import { useUser } from '../stores/user'
+import FormButtons from './UI/FormButtons.vue'
 
 const user = useUser()
+const alert = ref(false)
 
 const login = reactive({
   email: '',
@@ -10,9 +12,27 @@ const login = reactive({
   remember: false
 })
 
-onDeactivated(() => {
-  user.editUser(login)
+defineProps({
+  activeIndex: Number,
+  formsLength: Number
 })
+
+const emit = defineEmits(['Login', 'onClickInc', 'onClickDec'])
+
+const onSubmit = () => {
+  if (!login.email || !login.email.includes('@') || !login.password) {
+    alert.value = true
+    return
+  }
+
+  user.editUser(login)
+  emit('onClickInc')
+}
+
+const onBackward = () => {
+  user.editUser(login)
+  emit('onClickDec')
+}
 </script>
 
 <template>
@@ -22,7 +42,7 @@ onDeactivated(() => {
         <div class="card-header">Form 1</div>
 
         <div class="card-body">
-          <form @submit.prevent="">
+          <form @submit.prevent="onSubmit">
             <div class="row mb-3">
               <label for="email" class="col-md-4 col-form-label text-md-end">Email Address</label>
 
@@ -33,8 +53,8 @@ onDeactivated(() => {
                   type="email"
                   class="form-control"
                   name="email"
-                  required
                   autocomplete="email"
+                  required
                   autofocus
                 />
               </div>
@@ -71,6 +91,15 @@ onDeactivated(() => {
                 </div>
               </div>
             </div>
+
+            <p v-if="alert" class="text-danger fw-bold text-center">
+              Проверьте правильность заполненных данных
+            </p>
+            <form-buttons
+              :activeIndex="activeIndex"
+              :formsLength="formsLength"
+              @onBackward="onBackward"
+            />
           </form>
         </div>
       </div>
